@@ -4,7 +4,9 @@ import android.net.Uri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import java.io.IOException
 import java.net.HttpURLConnection
+import java.net.SocketTimeoutException
 import java.net.URL
 
 class NewsApiClient {
@@ -20,12 +22,15 @@ class NewsApiClient {
             .appendQueryParameter("country", country)
             .appendQueryParameter("category", category)
             .appendQueryParameter("pageSize", "50")
-            .appendQueryParameter("apiKey", BuildConfig.NEWS_API_KEY)
             .build()
         val connection = URL(endpoint.toString()).openConnection() as HttpURLConnection
         connection.requestMethod = "GET"
+        connection.setRequestProperty("X-Api-Key", BuildConfig.NEWS_API_KEY)
+        connection.setRequestProperty("Accept", "application/json")
+        connection.setRequestProperty("User-Agent", "LogNews/1.0")
         connection.connectTimeout = 15_000
         connection.readTimeout = 15_000
+        connection.useCaches = false
 
         try {
             val responseCode = connection.responseCode
@@ -38,7 +43,20 @@ class NewsApiClient {
             if (responseBody.isBlank()) {
                 return@withContext Result.failure(Exception("News request failed (HTTP $responseCode)"))
             }
-            val response = JSONObject(responseBody)
+            val trimmedBody = responseBody.trimStart()
+            if (!trimmedBody.startsWith("{")) {
+                return@withContext Result.failure(
+                    Exception("The news service returned an invalid response. Please try again later.")
+                )
+            }
+
+            val response = try {
+                JSONObject(trimmedBody)
+            } catch (_: Exception) {
+                return@withContext Result.failure(
+                    Exception("The news service returned invalid data. Please try again later.")
+                )
+            }
             if (response.optString("status") != "ok") {
                 val message = response.optString("message").ifBlank {
                     "News request failed (HTTP $responseCode)"
@@ -67,8 +85,12 @@ class NewsApiClient {
                 }
             }
             Result.success(articles)
-        } catch (exception: Exception) {
-            Result.failure(exception)
+        } catch (_: SocketTimeoutException) {
+            Result.failure(Exception("The request timed out. Check your connection and try again."))
+        } catch (_: IOException) {
+            Result.failure(Exception("Unable to reach the news service. Check your connection and try again."))
+        } catch (_: Exception) {
+            Result.failure(Exception("Something went wrong while loading the news. Please try again."))
         } finally {
             connection.disconnect()
         }

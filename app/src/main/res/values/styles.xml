@@ -2,6 +2,7 @@
     <style name="Theme.NewsReader" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="android:fontFamily">sans</item>
         <item name="android:colorAccent">#0B6E69</item>
+        <item name="android:windowActionModeOverlay">true</item>
         <item name="android:navigationBarColor">#F6F8F7</item>
         <item name="android:statusBarColor">#F6F8F7</item>
         <item name="android:windowLightStatusBar">true</item>

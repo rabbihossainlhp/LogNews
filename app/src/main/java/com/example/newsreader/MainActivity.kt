@@ -12,9 +12,21 @@ import com.example.newsreader.databinding.ActivityMainBinding
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
+    private companion object {
+        const val TOUR_PREFERENCES = "lognews_preferences"
+        const val TOUR_COMPLETED = "tour_completed"
+    }
+
     private lateinit var binding: ActivityMainBinding
     private val apiClient = NewsApiClient()
     private lateinit var adapter: NewsAdapter
+    private var tourPage = 0
+
+    private val tourPages = listOf(
+        "Welcome to LogNews" to "Start with a focused view of the latest business headlines.",
+        "Read at a glance" to "Scan the source, date, and summary, then tap a story to read the full article.",
+        "Stay in control" to "Pull down to refresh whenever you want the newest stories in your feed."
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,7 +38,59 @@ class MainActivity : AppCompatActivity() {
         binding.newsList.adapter = adapter
         binding.refreshLayout.setOnRefreshListener { loadNews() }
         binding.retryButton.setOnClickListener { loadNews() }
+        setupOnboarding()
         loadNews()
+    }
+
+    private fun setupOnboarding() {
+        val preferences = getSharedPreferences(TOUR_PREFERENCES, MODE_PRIVATE)
+        if (preferences.getBoolean(TOUR_COMPLETED, false)) {
+            binding.onboardingCard.visibility = View.GONE
+            return
+        }
+
+        renderTourPage()
+        binding.onboardingSkip.setOnClickListener { finishOnboarding() }
+        binding.onboardingNext.setOnClickListener {
+            if (tourPage == tourPages.lastIndex) {
+                finishOnboarding()
+            } else {
+                tourPage += 1
+                renderTourPage()
+            }
+        }
+    }
+
+    private fun renderTourPage() {
+        val (title, message) = tourPages[tourPage]
+        binding.onboardingCard.animate()
+            .alpha(0.35f)
+            .translationX(10f)
+            .setDuration(90)
+            .withEndAction {
+                binding.onboardingTitle.text = title
+                binding.onboardingMessage.text = message
+                binding.onboardingNext.text = if (tourPage == tourPages.lastIndex) "Done" else "Next"
+                binding.onboardingCard.animate()
+                    .alpha(1f)
+                    .translationX(0f)
+                    .setDuration(180)
+                    .setInterpolator(android.view.animation.DecelerateInterpolator())
+                    .start()
+            }
+            .start()
+    }
+
+    private fun finishOnboarding() {
+        getSharedPreferences(TOUR_PREFERENCES, MODE_PRIVATE)
+            .edit()
+            .putBoolean(TOUR_COMPLETED, true)
+            .apply()
+        binding.onboardingCard.animate()
+            .alpha(0f)
+            .setDuration(180)
+            .withEndAction { binding.onboardingCard.visibility = View.GONE }
+            .start()
     }
 
     private fun loadNews() {
