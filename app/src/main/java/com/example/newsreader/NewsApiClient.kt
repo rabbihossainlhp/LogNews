@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.HttpURLConnection
+import java.net.URL
 
 class NewsApiClient {
     suspend fun topHeadlines(
@@ -21,7 +22,7 @@ class NewsApiClient {
             .appendQueryParameter("pageSize", "50")
             .appendQueryParameter("apiKey", BuildConfig.NEWS_API_KEY)
             .build()
-        val connection = endpoint.openConnection() as HttpURLConnection
+        val connection = URL(endpoint.toString()).openConnection() as HttpURLConnection
         connection.requestMethod = "GET"
         connection.connectTimeout = 15_000
         connection.readTimeout = 15_000
