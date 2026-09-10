@@ -35,12 +35,15 @@ class NewsAdapter(private val onArticleClick: (NewsArticle) -> Unit) :
             binding.root.setOnClickListener { onArticleClick(article) }
         }
 
-        private fun formatDate(value: String): String = try {
-            val input = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
-            val output = SimpleDateFormat("MMM d, yyyy", Locale.US)
-            output.format(input.parse(value) ?: return value)
-        } catch (_: Exception) {
-            value.take(10)
+        private fun formatDate(value: String): String {
+            return try {
+                val input = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
+                val output = SimpleDateFormat("MMM d, yyyy", Locale.US)
+                val parsedDate = input.parse(value)
+                if (parsedDate == null) value else output.format(parsedDate)
+            } catch (_: Exception) {
+                value.take(10)
+            }
         }
     }
 }
