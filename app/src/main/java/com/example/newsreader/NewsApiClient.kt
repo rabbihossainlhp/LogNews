@@ -1,30 +1,48 @@
 package com.example.newsreader
 
+import android.net.Uri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.HttpURLConnection
-import java.net.URL
 
 class NewsApiClient {
-    suspend fun topHeadlines(country: String = "us"): Result<List<NewsArticle>> = withContext(Dispatchers.IO) {
+    suspend fun topHeadlines(
+        country: String = "us",
+        category: String = "business"
+    ): Result<List<NewsArticle>> = withContext(Dispatchers.IO) {
         if (BuildConfig.NEWS_API_KEY.isBlank()) {
             return@withContext Result.failure(IllegalStateException("NEWS_API_KEY is missing"))
         }
 
-        val endpoint = URL(
-            "https://newsapi.org/v2/top-headlines?country=$country&pageSize=50&apiKey=${BuildConfig.NEWS_API_KEY}"
-        )
+        val endpoint = Uri.parse("https://newsapi.org/v2/top-headlines").buildUpon()
+            .appendQueryParameter("country", country)
+            .appendQueryParameter("category", category)
+            .appendQueryParameter("pageSize", "50")
+            .appendQueryParameter("apiKey", BuildConfig.NEWS_API_KEY)
+            .build()
         val connection = endpoint.openConnection() as HttpURLConnection
         connection.requestMethod = "GET"
         connection.connectTimeout = 15_000
         connection.readTimeout = 15_000
 
         try {
-            val responseBody = connection.inputStream.bufferedReader().use { it.readText() }
+            val responseCode = connection.responseCode
+            val responseStream = if (responseCode in 200..299) {
+                connection.inputStream
+            } else {
+                connection.errorStream
+            }
+            val responseBody = responseStream?.bufferedReader()?.use { it.readText() }.orEmpty()
+            if (responseBody.isBlank()) {
+                return@withContext Result.failure(Exception("News request failed (HTTP $responseCode)"))
+            }
             val response = JSONObject(responseBody)
             if (response.optString("status") != "ok") {
-                return@withContext Result.failure(Exception(response.optString("message", "News request failed")))
+                val message = response.optString("message").ifBlank {
+                    "News request failed (HTTP $responseCode)"
+                }
+                return@withContext Result.failure(Exception(message))
             }
 
             val articles = buildList {
