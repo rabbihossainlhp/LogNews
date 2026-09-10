@@ -34,7 +34,11 @@ jobs:
       - name: Check NewsAPI key
         env:
           NEWS_API_KEY: ${{ secrets.NEWS_API_KEY }}
-        run: test -n "$NEWS_API_KEY"
+        run: |
+          if [ -z "$NEWS_API_KEY" ]; then
+            echo "NEWS_API_KEY is not available to this workflow. Add it under Settings > Secrets and variables > Actions as a repository secret named NEWS_API_KEY."
+            exit 1
+          fi
 
       - name: Build debug APK
         env:
