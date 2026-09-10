@@ -19,6 +19,11 @@ android {
         buildConfigField("String", "NEWS_API_KEY", "\"$escapedKey\"")
     }
 
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
     buildFeatures {
         buildConfig = true
         viewBinding = true
