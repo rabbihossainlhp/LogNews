@@ -19,8 +19,12 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val apiClient = NewsApiClient()
+    private lateinit var cache: NewsCache
     private lateinit var adapter: NewsAdapter
     private var tourPage = 0
+    private var currentCategory = "business"
+    private var showingSaved = false
+    private var savedUrls = emptySet<String>()
 
     private val tourPages = listOf(
         "Welcome to LogNews" to "Start with a focused view of the latest business headlines.",
@@ -33,12 +37,18 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        adapter = NewsAdapter(::openArticle)
+        cache = NewsCache(this)
+        savedUrls = cache.savedUrls()
+        adapter = NewsAdapter(::openArticle, { article -> article.url in savedUrls }, ::toggleSaved)
         binding.newsList.layoutManager = LinearLayoutManager(this)
         binding.newsList.adapter = adapter
         binding.refreshLayout.setOnRefreshListener { loadNews() }
         binding.retryButton.setOnClickListener { loadNews() }
+        binding.businessButton.setOnClickListener { selectCategory("business") }
+        binding.technologyButton.setOnClickListener { selectCategory("technology") }
+        binding.savedButton.setOnClickListener { showSavedStories() }
         setupOnboarding()
+        showCachedArticles()
         loadNews()
     }
 
@@ -93,21 +103,71 @@ class MainActivity : AppCompatActivity() {
             .start()
     }
 
+    private fun selectCategory(category: String) {
+        showingSaved = false
+        currentCategory = category
+        binding.feedSubtitle.text = "$category headlines, thoughtfully selected"
+        loadNews()
+    }
+
+    private fun showSavedStories() {
+        showingSaved = true
+        val savedArticles = cache.loadSavedArticles().filter { it.url in savedUrls }
+        renderArticles(savedArticles)
+        binding.feedSubtitle.text = "Your saved stories, ready anytime"
+        binding.feedStatus.text = if (savedArticles.isEmpty()) "Save a story to find it here, even offline." else "${savedArticles.size} saved ${if (savedArticles.size == 1) "story" else "stories"}"
+        binding.feedStatus.visibility = View.VISIBLE
+        binding.errorPanel.visibility = View.GONE
+    }
+
+    private fun toggleSaved(article: NewsArticle) {
+        if (article.url in savedUrls) {
+            cache.removeSavedArticle(article.url)
+        } else {
+            cache.saveArticle(article)
+        }
+        savedUrls = cache.toggleSaved(article.url)
+        if (showingSaved) showSavedStories() else adapter.notifyDataSetChanged()
+        Toast.makeText(this, if (article.url in savedUrls) "Story saved" else "Removed from saved", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun showCachedArticles() {
+        val cachedArticles = cache.loadArticles()
+        if (cachedArticles.isNotEmpty()) {
+            renderArticles(cachedArticles)
+            binding.feedStatus.text = "Cached headlines available offline"
+            binding.feedStatus.visibility = View.VISIBLE
+        }
+    }
+
+    private fun renderArticles(articles: List<NewsArticle>) {
+        adapter.submitList(articles)
+        binding.loading.visibility = View.GONE
+        binding.emptyState.visibility = if (articles.isEmpty()) View.VISIBLE else View.GONE
+    }
+
     private fun loadNews() {
+        if (showingSaved) return
         binding.refreshLayout.isRefreshing = true
         binding.errorPanel.visibility = View.GONE
         if (adapter.itemCount == 0) binding.loading.visibility = View.VISIBLE
 
         lifecycleScope.launch {
-            apiClient.topHeadlines().onSuccess { articles ->
-                adapter.submitList(articles)
-                binding.loading.visibility = View.GONE
-                binding.emptyState.visibility = if (articles.isEmpty()) View.VISIBLE else View.GONE
+            apiClient.topHeadlines(category = currentCategory).onSuccess { articles ->
+                cache.saveArticles(articles)
+                binding.feedStatus.text = "Updated just now • also available offline"
+                binding.feedStatus.visibility = View.VISIBLE
+                renderArticles(articles)
             }.onFailure { error ->
                 binding.loading.visibility = View.GONE
-                binding.emptyState.visibility = View.GONE
-                binding.errorPanel.visibility = View.VISIBLE
-                binding.errorMessage.text = error.message ?: "Could not load news."
+                if (adapter.itemCount == 0) {
+                    binding.emptyState.visibility = View.VISIBLE
+                    binding.errorPanel.visibility = View.VISIBLE
+                    binding.errorMessage.text = error.message ?: "Could not load news."
+                } else {
+                    binding.feedStatus.text = "Offline mode • showing your cached headlines"
+                    binding.feedStatus.visibility = View.VISIBLE
+                }
             }
             binding.refreshLayout.isRefreshing = false
         }

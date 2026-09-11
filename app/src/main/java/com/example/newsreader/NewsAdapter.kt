@@ -7,7 +7,11 @@ import com.example.newsreader.databinding.ItemNewsBinding
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class NewsAdapter(private val onArticleClick: (NewsArticle) -> Unit) :
+class NewsAdapter(
+    private val onArticleClick: (NewsArticle) -> Unit,
+    private val isSaved: (NewsArticle) -> Boolean,
+    private val onSaveClick: (NewsArticle) -> Unit
+) :
     RecyclerView.Adapter<NewsAdapter.NewsViewHolder>() {
 
     private val articles = mutableListOf<NewsArticle>()
@@ -33,6 +37,8 @@ class NewsAdapter(private val onArticleClick: (NewsArticle) -> Unit) :
             binding.description.visibility = if (article.description.isNullOrBlank()) ViewGroup.GONE else ViewGroup.VISIBLE
             binding.source.text = listOfNotNull(article.source, article.publishedAt?.let(::formatDate)).joinToString("  •  ")
             binding.root.setOnClickListener { onArticleClick(article) }
+            binding.saveButton.text = if (isSaved(article)) "Saved" else "Save"
+            binding.saveButton.setOnClickListener { onSaveClick(article) }
         }
 
         private fun formatDate(value: String): String {

@@ -15,6 +15,7 @@
         android:paddingEnd="20dp">
 
         <TextView
+            android:id="@+id/appTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="LogNews"
@@ -23,12 +24,61 @@
             android:textStyle="bold" />
 
         <TextView
+            android:id="@+id/feedSubtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:text="Business headlines, thoughtfully selected"
             android:textColor="#5F7371"
             android:textSize="15sp" />
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/businessButton"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minHeight="42dp"
+                    android:text="Business" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/technologyButton"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minHeight="42dp"
+                    android:text="Technology"
+                    android:textColor="#0B6E69" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/savedButton"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minHeight="42dp"
+                    android:text="Saved"
+                    android:textColor="#0B6E69" />
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <TextView
+            android:id="@+id/feedStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textColor="#5F7371"
+            android:textSize="12sp"
+            android:visibility="gone" />
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/onboardingCard"

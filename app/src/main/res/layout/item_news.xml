@@ -38,5 +38,16 @@
             android:layout_marginTop="7dp"
             android:textColor="#5F7371"
             android:textSize="14sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/saveButton"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="4dp"
+            android:minHeight="40dp"
+            android:text="Save"
+            android:textColor="#0B6E69" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>
