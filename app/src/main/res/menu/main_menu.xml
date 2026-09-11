@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_refresh"
+        android:title="Refresh headlines" />
+    <item
+        android:id="@+id/action_saved"
+        android:title="Open saved stories" />
+    <item
+        android:id="@+id/action_tour"
+        android:title="Replay welcome tour" />
+</menu>

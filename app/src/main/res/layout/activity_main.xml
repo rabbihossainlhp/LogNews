@@ -14,14 +14,47 @@
         android:paddingTop="24dp"
         android:paddingEnd="20dp">
 
-        <TextView
-            android:id="@+id/appTitle"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/headerRow"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="LogNews"
-            android:textColor="#102A2A"
-            android:textSize="28sp"
-            android:textStyle="bold" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/appTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="LogNews"
+                    android:textColor="#102A2A"
+                    android:textSize="30sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="READ SMARTER"
+                    android:textColor="#D17B32"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/menuButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:backgroundTint="#E3F1ED"
+                android:contentDescription="More options"
+                android:src="@android:drawable/ic_menu_more"
+                android:tint="#0B6E69" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/feedSubtitle"

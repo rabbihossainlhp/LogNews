@@ -12,7 +12,8 @@ It fetches top headlines from [NewsAPI.org](https://newsapi.org), includes a Ban
 - **Offline cache** for previously loaded headlines (stored per category)
 - **Saved stories** list stored on device
 - **In-app article reader** for every story, with an explicit “Read original article” action
-- **Animated local summary** generated from the cached publisher description, including offline
+- **Animated LogNews Brief** with multi-point local summarization generated from the cached publisher description, including offline
+- **Editorial launch animation** and overflow menu for refresh, saved stories, and replaying the tour
 - **Light onboarding flow** shown on first launch
 - **Graceful error handling** for missing API keys, invalid responses, network issues, and timeouts
 

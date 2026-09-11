@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -40,6 +41,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        playLaunchAnimation()
 
         cache = NewsCache(this)
         savedUrls = cache.savedUrls()
@@ -52,6 +54,7 @@ class MainActivity : AppCompatActivity() {
         binding.technologyButton.setOnClickListener { selectCategory("technology") }
         binding.banglaButton.setOnClickListener { selectCategory("bangla") }
         binding.savedButton.setOnClickListener { showSavedStories() }
+        binding.menuButton.setOnClickListener { showMenu() }
         updateMenuSelection("business")
         setupOnboarding()
         showCachedArticles()
@@ -75,6 +78,53 @@ class MainActivity : AppCompatActivity() {
                 renderTourPage()
             }
         }
+    }
+
+    private fun playLaunchAnimation() {
+        binding.root.alpha = 0f
+        binding.root.translationY = 22f
+        binding.root.animate()
+            .alpha(1f)
+            .translationY(0f)
+            .setDuration(420)
+            .setInterpolator(android.view.animation.DecelerateInterpolator())
+            .start()
+    }
+
+    private fun showMenu() {
+        PopupMenu(this, binding.menuButton).apply {
+            menuInflater.inflate(R.menu.main_menu, menu)
+            setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.action_refresh -> {
+                        showingSaved = false
+                        loadNews()
+                        true
+                    }
+                    R.id.action_saved -> {
+                        showSavedStories()
+                        true
+                    }
+                    R.id.action_tour -> {
+                        replayTour()
+                        true
+                    }
+                    else -> false
+                }
+            }
+        }.show()
+    }
+
+    private fun replayTour() {
+        tourPage = 0
+        getSharedPreferences(TOUR_PREFERENCES, MODE_PRIVATE)
+            .edit()
+            .putBoolean(TOUR_COMPLETED, false)
+            .apply()
+        binding.onboardingCard.alpha = 1f
+        binding.onboardingCard.translationX = 0f
+        binding.onboardingCard.visibility = View.VISIBLE
+        renderTourPage()
     }
 
     private fun renderTourPage() {
@@ -223,12 +273,13 @@ class MainActivity : AppCompatActivity() {
     private fun buildLocalSummary(article: NewsArticle): String {
         val sourceText = article.description?.trim().orEmpty()
         if (sourceText.isBlank()) {
-            return "This story is from ${article.source}. Open the original article for the full report."
+            return "${article.title}\n\nThis story is from ${article.source}. Open the original article for the full report."
         }
         val sentences = sourceText.split(Regex("(?<=[.!?।])\\s+"))
             .filter { it.isNotBlank() }
-            .take(2)
-        return "${sentences.joinToString(" ")}\n\nSource: ${article.source}"
+            .take(4)
+        val keyPoints = sentences.mapIndexed { index, sentence -> "${index + 1}. ${sentence.trim()}" }
+        return "${article.title}\n\n${keyPoints.joinToString("\n\n")}\n\nWhy it matters: This report is worth following for its latest developments.\n\nSource: ${article.source}"
     }
 
     private fun updateMenuSelection(selected: String) {
