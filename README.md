@@ -1,15 +1,17 @@
 # LogNews
 
-LogNews is a native Android news reader built with Kotlin.  
-It fetches top headlines from [NewsAPI.org](https://newsapi.org), supports quick category switching, and keeps stories available with offline caching.
+LogNews is a native Android news reader built with Kotlin.
+It fetches top headlines from [NewsAPI.org](https://newsapi.org), includes a Bangla feed from Google News RSS, and keeps stories available with offline caching.
 
 ## Features
 
 - **Top headlines feed** powered by NewsAPI Top Headlines endpoint
-- **Category filters** for Business and Technology
+- **Category filters** for Business, Technology, and Bangla
+- **Bangla headlines** from Google News RSS (`hl=bn`, Bangladesh edition) without an extra API key
 - **Pull-to-refresh** for loading the latest stories
-- **Offline cache** for previously loaded headlines
+- **Offline cache** for previously loaded headlines (stored per category)
 - **Saved stories** list stored on device
+- **Saved story summary dialog** for quick reading offline, with optional “Open original”
 - **Light onboarding flow** shown on first launch
 - **Graceful error handling** for missing API keys, invalid responses, network issues, and timeouts
 
@@ -30,7 +32,7 @@ LogNews/
 ├── app/
 │   ├── src/main/java/com/example/newsreader/
 │   │   ├── MainActivity.kt      # Screen logic, onboarding, category switching, refresh flow
-│   │   ├── NewsApiClient.kt     # NewsAPI HTTP client and response parsing
+│   │   ├── NewsApiClient.kt     # NewsAPI client + Bangla RSS parsing
 │   │   ├── NewsCache.kt         # Cached and saved article persistence
 │   │   ├── NewsAdapter.kt       # RecyclerView adapter for article cards
 │   │   └── NewsArticle.kt       # Article data model
@@ -76,8 +78,10 @@ export NEWS_API_KEY="your_newsapi_key_here"
 3. Download artifact: `news-reader-debug-apk`.
 4. Install `app-debug.apk` on your Android device.
 
-> If you created or changed `NEWS_API_KEY`, reinstall an APK from a **new** workflow run.  
+> If you created or changed `NEWS_API_KEY`, reinstall an APK from a **new** workflow run.
 > Older APKs built without the key will keep showing: `NEWS_API_KEY is missing`.
+
+No Android SDK, Gradle, or Kotlin installation is required on your local machine when using this workflow.
 
 ### Build Locally
 
@@ -96,11 +100,11 @@ app/build/outputs/apk/debug/app-debug.apk
 ## How the App Works
 
 1. App starts and initializes cache, adapter, and onboarding.
-2. Cached headlines are shown immediately if available.
-3. Fresh headlines are requested from NewsAPI.
+2. Cached headlines for the selected category are shown if available.
+3. Fresh headlines are requested from NewsAPI (or Bangla RSS for Bangla category).
 4. Successful results are rendered and saved offline.
 5. Users can:
-   - switch category,
+   - switch categories,
    - save/unsave stories,
    - open full article links in browser,
    - view saved stories offline.
