@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.example.newsreader.databinding.ActivityMainBinding
 import kotlinx.coroutines.launch
 
@@ -46,6 +47,7 @@ class MainActivity : AppCompatActivity() {
         binding.retryButton.setOnClickListener { loadNews() }
         binding.businessButton.setOnClickListener { selectCategory("business") }
         binding.technologyButton.setOnClickListener { selectCategory("technology") }
+        binding.banglaButton.setOnClickListener { selectCategory("bangla") }
         binding.savedButton.setOnClickListener { showSavedStories() }
         setupOnboarding()
         showCachedArticles()
@@ -106,7 +108,11 @@ class MainActivity : AppCompatActivity() {
     private fun selectCategory(category: String) {
         showingSaved = false
         currentCategory = category
-        binding.feedSubtitle.text = "$category headlines, thoughtfully selected"
+        binding.feedSubtitle.text = when (category) {
+            "bangla" -> "বাংলা সংবাদ, thoughtfully selected"
+            else -> "$category headlines, thoughtfully selected"
+        }
+        showCachedArticles()
         loadNews()
     }
 
@@ -132,7 +138,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showCachedArticles() {
-        val cachedArticles = cache.loadArticles()
+        val cachedArticles = cache.loadArticles(currentCategory)
         if (cachedArticles.isNotEmpty()) {
             renderArticles(cachedArticles)
             binding.feedStatus.text = "Cached headlines available offline"
@@ -154,7 +160,7 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             apiClient.topHeadlines(category = currentCategory).onSuccess { articles ->
-                cache.saveArticles(articles)
+                cache.saveArticles(articles, currentCategory)
                 binding.feedStatus.text = "Updated just now • also available offline"
                 binding.feedStatus.visibility = View.VISIBLE
                 renderArticles(articles)
@@ -174,6 +180,29 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun openArticle(article: NewsArticle) {
+        if (article.url in savedUrls) {
+            showSavedSummary(article)
+            return
+        }
+        try {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(article.url)))
+        } catch (_: Exception) {
+            Toast.makeText(this, "Unable to open article", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun showSavedSummary(article: NewsArticle) {
+        val summary = article.description?.takeIf { it.isNotBlank() }
+            ?: "This saved story has no publisher summary. You can open the original article when you are online."
+        MaterialAlertDialogBuilder(this)
+            .setTitle(article.title)
+            .setMessage("${article.source}\n\n$summary")
+            .setPositiveButton("Close", null)
+            .setNeutralButton("Open original") { _, _ -> openArticleOnline(article) }
+            .show()
+    }
+
+    private fun openArticleOnline(article: NewsArticle) {
         try {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(article.url)))
         } catch (_: Exception) {

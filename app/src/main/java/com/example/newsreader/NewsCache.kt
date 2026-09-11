@@ -7,7 +7,7 @@ import org.json.JSONObject
 class NewsCache(context: Context) {
     private val preferences = context.getSharedPreferences("lognews_cache", Context.MODE_PRIVATE)
 
-    fun saveArticles(articles: List<NewsArticle>) {
+    fun saveArticles(articles: List<NewsArticle>, category: String) {
         val payload = JSONArray()
         articles.forEach { article ->
             payload.put(
@@ -21,11 +21,11 @@ class NewsCache(context: Context) {
                 }
             )
         }
-        preferences.edit().putString(KEY_ARTICLES, payload.toString()).apply()
+        preferences.edit().putString("$KEY_ARTICLES-$category", payload.toString()).apply()
     }
 
-    fun loadArticles(): List<NewsArticle> {
-        val raw = preferences.getString(KEY_ARTICLES, null) ?: return emptyList()
+    fun loadArticles(category: String): List<NewsArticle> {
+        val raw = preferences.getString("$KEY_ARTICLES-$category", null) ?: return emptyList()
         return try {
             val payload = JSONArray(raw)
             buildList {

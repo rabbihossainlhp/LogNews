@@ -61,6 +61,15 @@
                     android:textColor="#0B6E69" />
 
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/banglaButton"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minHeight="42dp"
+                    android:text="বাংলা"
+                    android:textColor="#0B6E69" />
+
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/savedButton"
                     style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="wrap_content"
