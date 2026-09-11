@@ -72,6 +72,20 @@ class NewsCache(context: Context) {
         return updated
     }
 
+    fun saveNote(url: String, note: String) {
+        val notes = preferences.getStringSet(KEY_NOTES, emptySet()).orEmpty().toMutableSet()
+        notes.removeAll { it.substringBefore("\u0000") == url }
+        if (note.isNotBlank()) notes.add("$url\u0000$note")
+        preferences.edit().putStringSet(KEY_NOTES, notes).apply()
+    }
+
+    fun loadNote(url: String): String {
+        return preferences.getStringSet(KEY_NOTES, emptySet()).orEmpty()
+            .firstOrNull { it.substringBefore("\u0000") == url }
+            ?.substringAfter("\u0000")
+            .orEmpty()
+    }
+
     private fun encode(articles: List<NewsArticle>): String {
         val payload = JSONArray()
         articles.forEach { article ->
@@ -111,5 +125,6 @@ class NewsCache(context: Context) {
         const val KEY_ARTICLES = "cached_articles"
         const val KEY_SAVED_URLS = "saved_urls"
         const val KEY_SAVED_ARTICLES = "saved_articles"
+        const val KEY_NOTES = "article_notes"
     }
 }

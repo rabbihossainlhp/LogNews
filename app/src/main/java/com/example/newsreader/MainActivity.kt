@@ -308,7 +308,12 @@ class MainActivity : AppCompatActivity() {
                 android.view.ViewGroup.LayoutParams.MATCH_PARENT,
                 android.view.ViewGroup.LayoutParams.MATCH_PARENT
             )
-            dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+            dialog.window?.setBackgroundDrawableResource(android.R.color.white)
+        }
+        detailBinding.noteInput.setText(cache.loadNote(article.url))
+        detailBinding.saveNoteButton.setOnClickListener {
+            cache.saveNote(article.url, detailBinding.noteInput.text.toString())
+            Toast.makeText(this, "Personal note saved", Toast.LENGTH_SHORT).show()
         }
         detailBinding.openOriginalButton.setOnClickListener { openArticleOnline(article) }
         detailBinding.summarizeButton.setOnClickListener {

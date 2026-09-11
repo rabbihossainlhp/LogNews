@@ -13,6 +13,7 @@ It fetches top headlines from [NewsAPI.org](https://newsapi.org), includes a Ban
 - **Saved stories** list stored on device
 - **In-app article reader** for every story, with an explicit “Read original article” action
 - **Animated LogNews Brief** with multi-point local summarization generated from the cached publisher description, including offline
+- **Personal notes** attached to stories for student takeaways, research points, or professional follow-up tasks
 - **Editorial launch animation** and overflow menu for refresh, saved stories, and replaying the tour
 - **Light onboarding flow** shown on first launch
 - **Graceful error handling** for missing API keys, invalid responses, network issues, and timeouts
@@ -110,6 +111,7 @@ app/build/outputs/apk/debug/app-debug.apk
    - save/unsave stories,
    - read every story in-app first,
    - request an animated local summary,
+   - write and save a private personal note for any story,
    - open the full article only through the explicit original-link button,
    - view saved stories and summaries offline.
 
