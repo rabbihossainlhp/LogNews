@@ -9,7 +9,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="28dp">
+
+        <TextView
+            android:id="@+id/articleKicker"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="LOGNEWS READER"
+            android:textColor="#D17B32"
+            android:textSize="11sp"
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/articleSource"
@@ -25,7 +34,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:textColor="#102A2A"
-            android:textSize="22sp"
+            android:textSize="26sp"
             android:textStyle="bold" />
 
         <TextView

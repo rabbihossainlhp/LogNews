@@ -7,6 +7,9 @@
         android:id="@+id/action_saved"
         android:title="Open saved stories" />
     <item
+        android:id="@+id/action_pulse"
+        android:title="Today's pulse" />
+    <item
         android:id="@+id/action_tour"
         android:title="Replay welcome tour" />
 </menu>

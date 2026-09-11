@@ -81,14 +81,42 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun playLaunchAnimation() {
-        binding.root.alpha = 0f
-        binding.root.translationY = 22f
-        binding.root.animate()
+        binding.refreshLayout.alpha = 0f
+        binding.launchLogo.scaleX = 0.72f
+        binding.launchLogo.scaleY = 0.72f
+        binding.launchLogo.alpha = 0f
+        binding.launchTitle.alpha = 0f
+        binding.launchTagline.alpha = 0f
+
+        binding.launchLogo.animate()
             .alpha(1f)
-            .translationY(0f)
-            .setDuration(420)
-            .setInterpolator(android.view.animation.DecelerateInterpolator())
+            .scaleX(1f)
+            .scaleY(1f)
+            .setDuration(520)
+            .setInterpolator(android.view.animation.OvershootInterpolator())
             .start()
+        binding.launchTitle.animate()
+            .alpha(1f)
+            .setStartDelay(220)
+            .setDuration(360)
+            .start()
+        binding.launchTagline.animate()
+            .alpha(0.82f)
+            .setStartDelay(420)
+            .setDuration(360)
+            .start()
+
+        binding.launchOverlay.postDelayed({
+            binding.refreshLayout.animate()
+                .alpha(1f)
+                .setDuration(420)
+                .start()
+            binding.launchOverlay.animate()
+                .alpha(0f)
+                .setDuration(420)
+                .withEndAction { binding.launchOverlay.visibility = View.GONE }
+                .start()
+        }, 1150)
     }
 
     private fun showMenu() {
@@ -103,6 +131,10 @@ class MainActivity : AppCompatActivity() {
                     }
                     R.id.action_saved -> {
                         showSavedStories()
+                        true
+                    }
+                    R.id.action_pulse -> {
+                        showTodaysPulse()
                         true
                     }
                     R.id.action_tour -> {
@@ -145,6 +177,28 @@ class MainActivity : AppCompatActivity() {
                     .start()
             }
             .start()
+    }
+
+    private fun showTodaysPulse() {
+        val articles = if (showingSaved) {
+            cache.loadSavedArticles()
+        } else {
+            cache.loadArticles(currentCategory)
+        }
+        if (articles.isEmpty()) {
+            Toast.makeText(this, "Load a few stories before opening Today's pulse.", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val sources = articles.map { it.source }.filter { it.isNotBlank() }.distinct().take(3)
+        val leadStories = articles.take(3).joinToString("\n\n") { "• ${it.title}" }
+        val pulse = "${articles.size} stories are shaping this feed across ${sources.size} sources.\n\n" +
+            "Lead signals\n$leadStories\n\n" +
+            "Reader cue\nStart with the first story, save what deserves a second look, and use the brief inside each story for a fast read."
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Today's pulse")
+            .setMessage(pulse)
+            .setPositiveButton("Close", null)
+            .show()
     }
 
     private fun finishOnboarding() {
@@ -249,6 +303,13 @@ class MainActivity : AppCompatActivity() {
         val dialog = MaterialAlertDialogBuilder(this)
             .setView(detailBinding.root)
             .create()
+        dialog.setOnShowListener {
+            dialog.window?.setLayout(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        }
         detailBinding.openOriginalButton.setOnClickListener { openArticleOnline(article) }
         detailBinding.summarizeButton.setOnClickListener {
             detailBinding.summarizeButton.isEnabled = false
