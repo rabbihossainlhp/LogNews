@@ -104,7 +104,13 @@ class NewsApiClient {
     }
 
     private fun fetchBanglaHeadlines(): Result<List<NewsArticle>> {
-        val connection = URL("https://news.google.com/rss?hl=bn&gl=BD&ceid=BD:bn")
+        val bangladeshFeed = Uri.parse("https://news.google.com/rss/search").buildUpon()
+            .appendQueryParameter("q", "Bangladesh OR ঢাকা OR বাংলাদেশ")
+            .appendQueryParameter("hl", "bn")
+            .appendQueryParameter("gl", "BD")
+            .appendQueryParameter("ceid", "BD:bn")
+            .build()
+        val connection = URL(bangladeshFeed.toString())
             .openConnection() as HttpURLConnection
         connection.requestMethod = "GET"
         connection.setRequestProperty("Accept", "application/rss+xml, application/xml")

@@ -7,11 +7,12 @@ It fetches top headlines from [NewsAPI.org](https://newsapi.org), includes a Ban
 
 - **Top headlines feed** powered by NewsAPI Top Headlines endpoint
 - **Category filters** for Business, Technology, and Bangla
-- **Bangla headlines** from Google News RSS (`hl=bn`, Bangladesh edition) without an extra API key
+- **Bangla headlines** from a Bangladesh-focused Google News RSS query without an extra API key
 - **Pull-to-refresh** for loading the latest stories
 - **Offline cache** for previously loaded headlines (stored per category)
 - **Saved stories** list stored on device
-- **Saved story summary dialog** for quick reading offline, with optional “Open original”
+- **In-app article reader** for every story, with an explicit “Read original article” action
+- **Animated local summary** generated from the cached publisher description, including offline
 - **Light onboarding flow** shown on first launch
 - **Graceful error handling** for missing API keys, invalid responses, network issues, and timeouts
 
@@ -106,8 +107,10 @@ app/build/outputs/apk/debug/app-debug.apk
 5. Users can:
    - switch categories,
    - save/unsave stories,
-   - open full article links in browser,
-   - view saved stories offline.
+   - read every story in-app first,
+   - request an animated local summary,
+   - open the full article only through the explicit original-link button,
+   - view saved stories and summaries offline.
 
 ## Error and Offline Behavior
 

@@ -48,6 +48,7 @@
                     style="@style/Widget.Material3.Button.TonalButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginEnd="4dp"
                     android:minHeight="42dp"
                     android:text="Business" />
 
@@ -56,6 +57,7 @@
                     style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginEnd="4dp"
                     android:minHeight="42dp"
                     android:text="Technology"
                     android:textColor="#0B6E69" />
@@ -65,6 +67,7 @@
                     style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginEnd="4dp"
                     android:minHeight="42dp"
                     android:text="বাংলা"
                     android:textColor="#0B6E69" />

@@ -1,6 +1,8 @@
 package com.example.newsreader
 
 import android.content.Intent
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
@@ -10,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.example.newsreader.databinding.ActivityMainBinding
+import com.example.newsreader.databinding.DialogArticleDetailBinding
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -49,6 +52,7 @@ class MainActivity : AppCompatActivity() {
         binding.technologyButton.setOnClickListener { selectCategory("technology") }
         binding.banglaButton.setOnClickListener { selectCategory("bangla") }
         binding.savedButton.setOnClickListener { showSavedStories() }
+        updateMenuSelection("business")
         setupOnboarding()
         showCachedArticles()
         loadNews()
@@ -108,6 +112,7 @@ class MainActivity : AppCompatActivity() {
     private fun selectCategory(category: String) {
         showingSaved = false
         currentCategory = category
+        updateMenuSelection(category)
         binding.feedSubtitle.text = when (category) {
             "bangla" -> "বাংলা সংবাদ, thoughtfully selected"
             else -> "$category headlines, thoughtfully selected"
@@ -118,6 +123,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun showSavedStories() {
         showingSaved = true
+        updateMenuSelection("saved")
         val savedArticles = cache.loadSavedArticles().filter { it.url in savedUrls }
         renderArticles(savedArticles)
         binding.feedSubtitle.text = "Your saved stories, ready anytime"
@@ -180,26 +186,66 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun openArticle(article: NewsArticle) {
-        if (article.url in savedUrls) {
-            showSavedSummary(article)
-            return
-        }
-        try {
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(article.url)))
-        } catch (_: Exception) {
-            Toast.makeText(this, "Unable to open article", Toast.LENGTH_SHORT).show()
-        }
+        showArticleDetail(article)
     }
 
-    private fun showSavedSummary(article: NewsArticle) {
-        val summary = article.description?.takeIf { it.isNotBlank() }
-            ?: "This saved story has no publisher summary. You can open the original article when you are online."
-        MaterialAlertDialogBuilder(this)
-            .setTitle(article.title)
-            .setMessage("${article.source}\n\n$summary")
-            .setPositiveButton("Close", null)
-            .setNeutralButton("Open original") { _, _ -> openArticleOnline(article) }
-            .show()
+    private fun showArticleDetail(article: NewsArticle) {
+        val detailBinding = DialogArticleDetailBinding.inflate(layoutInflater)
+        detailBinding.articleSource.text = article.source
+        detailBinding.articleTitle.text = article.title
+        detailBinding.articleDescription.text = article.description?.takeIf { it.isNotBlank() }
+            ?: "No publisher description is available for this story yet."
+
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setView(detailBinding.root)
+            .create()
+        detailBinding.openOriginalButton.setOnClickListener { openArticleOnline(article) }
+        detailBinding.summarizeButton.setOnClickListener {
+            detailBinding.summarizeButton.isEnabled = false
+            detailBinding.summaryProgress.visibility = View.VISIBLE
+            detailBinding.summaryCard.visibility = View.GONE
+            detailBinding.root.postDelayed({
+                detailBinding.summaryText.text = buildLocalSummary(article)
+                detailBinding.summaryProgress.visibility = View.GONE
+                detailBinding.summaryCard.alpha = 0f
+                detailBinding.summaryCard.visibility = View.VISIBLE
+                detailBinding.summaryCard.animate()
+                    .alpha(1f)
+                    .setDuration(280)
+                    .setInterpolator(android.view.animation.DecelerateInterpolator())
+                    .start()
+                detailBinding.summarizeButton.text = "Summary ready"
+            }, 450)
+        }
+        dialog.show()
+    }
+
+    private fun buildLocalSummary(article: NewsArticle): String {
+        val sourceText = article.description?.trim().orEmpty()
+        if (sourceText.isBlank()) {
+            return "This story is from ${article.source}. Open the original article for the full report."
+        }
+        val sentences = sourceText.split(Regex("(?<=[.!?।])\\s+"))
+            .filter { it.isNotBlank() }
+            .take(2)
+        return "${sentences.joinToString(" ")}\n\nSource: ${article.source}"
+    }
+
+    private fun updateMenuSelection(selected: String) {
+        val buttons = listOf(
+            "business" to binding.businessButton,
+            "technology" to binding.technologyButton,
+            "bangla" to binding.banglaButton,
+            "saved" to binding.savedButton
+        )
+        buttons.forEach { (name, button) ->
+            val active = name == selected
+            button.backgroundTintList = ColorStateList.valueOf(
+                Color.parseColor(if (active) "#0B6E69" else "#00000000")
+            )
+            button.setTextColor(Color.parseColor(if (active) "#FFFFFF" else "#0B6E69"))
+            button.alpha = if (active) 1f else 0.78f
+        }
     }
 
     private fun openArticleOnline(article: NewsArticle) {
